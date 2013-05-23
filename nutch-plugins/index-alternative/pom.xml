@@ -62,6 +62,12 @@
 			<version>1.0.0</version>
 			<type>jar</type>
 			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.codehaus.jackson</groupId>
+					<artifactId>jackson-mapper-asl</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -74,6 +80,11 @@
 			<groupId>org.ostermiller</groupId>
 			<artifactId>utils</artifactId>
 			<version>1.07.00</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-lgpl</artifactId>
+			<version>1.5.6</version>
 		</dependency>
 	</dependencies>
 

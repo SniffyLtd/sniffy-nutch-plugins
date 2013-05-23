@@ -8,6 +8,8 @@
       	</library>
       	<library name="log4j.jar"/>
       	<library name="utils.jar"/>
+      	<library name="jackson-mapper-lgpl.jar"/>
+      	<library name="jackson-core-lgpl.jar"/>
    	</runtime>
 
    	<requires>

@@ -19,110 +19,112 @@ import com.atlantbh.nutch.index.alternativedataflow.conf.AlternativeDataFlowInde
 import com.atlantbh.nutch.index.alternativedataflow.conf.Entry;
 import com.atlantbh.nutch.index.alternativedataflow.flow.CsvDataFlow;
 import com.atlantbh.nutch.index.alternativedataflow.flow.DataFlow;
+import com.atlantbh.nutch.index.alternativedataflow.flow.RestDataFlow;
 
 public class AlternativeDataFlowIndexingFilter implements IndexingFilter {
 
-	// Constants
-	private static Logger log = Logger.getLogger(AlternativeDataFlowIndexingFilter.class);
+    // Constants
+    private static Logger log = Logger.getLogger(AlternativeDataFlowIndexingFilter.class);
 
-	// Configuration
-	private Configuration configuration;
-	private AlternativeDataFlowIndexingFilterConfiguration alternativeDataFlowConfiguration;
+    // Configuration
+    private Configuration configuration;
 
-	// Internal data
-	private boolean initialized = false;
+    private AlternativeDataFlowIndexingFilterConfiguration alternativeDataFlowConfiguration;
 
-	// **********************************
-	// TEMPORARY IDEA OF CONFIGURATION
-	// **********************************
-	private static final Map<String, DataFlow> dataFlowMap = new HashMap<String, DataFlow>();
-	static {
-		dataFlowMap.put("CSV", new CsvDataFlow());
+    // Internal data
+    private boolean initialized = false;
 
-		// Call the destroy method on JVM shutdown
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+    // **********************************
+    // TEMPORARY IDEA OF CONFIGURATION
+    // **********************************
+    private static final Map<String, DataFlow> dataFlowMap = new HashMap<String, DataFlow>();
+    static {
+        dataFlowMap.put("CSV", new CsvDataFlow());
+        dataFlowMap.put("REST", new RestDataFlow());
 
-			@Override
-			public void run() {
+        // Call the destroy method on JVM shutdown
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 
-				// Iterate trough the dataFlowMap and call destroy method
-				for (String dataFlowId : dataFlowMap.keySet()) {
+            @Override
+            public void run() {
 
-					DataFlow dataFlow = dataFlowMap.get(dataFlowId);
-					dataFlow.destroy();
-				}
-			}
-		}));
-	}
+                // Iterate trough the dataFlowMap and call destroy method
+                for (String dataFlowId : dataFlowMap.keySet()) {
 
-	public AlternativeDataFlowIndexingFilter() {
-	}
+                    DataFlow dataFlow = dataFlowMap.get(dataFlowId);
+                    dataFlow.destroy();
+                }
+            }
+        }));
+    }
 
-	private void initConfig() {
+    public AlternativeDataFlowIndexingFilter() {
+    }
 
-		// Initialize configuration
-		alternativeDataFlowConfiguration = AlternativeDataFlowIndexingFilterConfiguration.getInstance(configuration);
-	}
+    private void initConfig() {
 
-	private void initDataFlows() {
+        // Initialize configuration
+        alternativeDataFlowConfiguration = AlternativeDataFlowIndexingFilterConfiguration.getInstance(configuration);
+    }
 
-		// Initialize only once
-		if (!initialized) {
+    private void initDataFlows() {
 
-			// Maps the data flow identifers with it's configuration entries
-			Map<String, List<Entry>> dataFlowEntryListMap = new HashMap<String, List<Entry>>();
-			for (Entry entry : alternativeDataFlowConfiguration.getEntryList()) {
+        // Initialize only once
+        if (!initialized) {
 
-				// Get or create an entry list
-				List<Entry> entryList;
-				if (dataFlowEntryListMap.containsKey(entry.getDataFlow())) {
-					entryList = dataFlowEntryListMap.get(entry.getDataFlow());
-				} else {
-					entryList = new LinkedList<Entry>();
-					dataFlowEntryListMap.put(entry.getDataFlow(), entryList);
-				}
+            // Maps the data flow identifers with it's configuration entries
+            Map<String, List<Entry>> dataFlowEntryListMap = new HashMap<String, List<Entry>>();
 
-				entryList.add(entry);
-			}
+            for (String dataFlowId : dataFlowMap.keySet()) {
+                dataFlowEntryListMap.put(dataFlowId, new LinkedList<Entry>());
+            }
 
-			// Iterate trough the dataFlowMap and initialize it
-			for (String dataFlowId : dataFlowMap.keySet()) {
+            for (Entry entry : alternativeDataFlowConfiguration.getEntryList()) {
 
-				DataFlow dataFlow = dataFlowMap.get(dataFlowId);
-				List<Entry> entryList = dataFlowEntryListMap.get(dataFlowId);
-				dataFlow.init(configuration, entryList);
-			}
+                // Get an entry list
+                List<Entry> entryList = dataFlowEntryListMap.get(entry.getDataFlow());
 
-			initialized = true;
-		}
-	}
+                entryList.add(entry);
+            }
 
-	@Override
-	public Configuration getConf() {
-		return configuration;
-	}
+            // Iterate trough the dataFlowMap and initialize it
+            for (String dataFlowId : dataFlowMap.keySet()) {
 
-	@Override
-	public void setConf(Configuration configuration) {
-		this.configuration = configuration;
-		initConfig();
-	}
+                DataFlow dataFlow = dataFlowMap.get(dataFlowId);
+                List<Entry> entryList = dataFlowEntryListMap.get(dataFlowId);
+                dataFlow.init(configuration, entryList);
+            }
 
-	@Override
-	public NutchDocument filter(NutchDocument doc, Parse parse, Text url, CrawlDatum datum, Inlinks inlinks) throws IndexingException {
+            initialized = true;
+        }
+    }
 
-		// Initialize the data flows
-		// Executed only the first time
-		initDataFlows();
+    @Override
+    public Configuration getConf() {
+        return configuration;
+    }
 
-		// Iterate trough the dataFlowMap and redirect the data flow to them
-		for (String dataFlowId : dataFlowMap.keySet()) {
+    @Override
+    public void setConf(Configuration configuration) {
+        this.configuration = configuration;
+        initConfig();
+    }
 
-			DataFlow dataFlow = dataFlowMap.get(dataFlowId);
-			dataFlow.processData(doc, parse, url, datum, inlinks);
-		}
+    @Override
+    public NutchDocument filter(NutchDocument doc, Parse parse, Text url, CrawlDatum datum, Inlinks inlinks)
+            throws IndexingException {
 
-		return doc;
-	}
+        // Initialize the data flows
+        // Executed only the first time
+        initDataFlows();
 
+        // Iterate trough the dataFlowMap and redirect the data flow to them
+        for (String dataFlowId : dataFlowMap.keySet()) {
+
+            DataFlow dataFlow = dataFlowMap.get(dataFlowId);
+            dataFlow.processData(doc, parse, url, datum, inlinks);
+        }
+
+        return doc;
+    }
 }

@@ -5,7 +5,6 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 
 public class XPathIndexerProperties {
 
@@ -23,7 +22,7 @@ public class XPathIndexerProperties {
 		this.xPathIndexerPropertiesFieldList = xPathIndexerPropertiesFieldList;
 	}
 	
-	@XmlAttribute(name="urlFilterRegex", required=false)
+	@XmlAttribute(name="pageUrlFilterRegex", required=false)
 	public String getPageUrlFilterRegex() {
 		return pageUrlFilterRegex;
 	}

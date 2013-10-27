@@ -64,6 +64,7 @@ public class XPathIndexingFilter implements IndexingFilter {
 	@Override
 	public NutchDocument filter(NutchDocument doc, Parse parse, Text url, CrawlDatum datum, Inlinks inlinks) throws IndexingException {
 		Metadata metadata = parse.getData().getParseMeta();
+		log.info("Parsing page: " + url);
 		
 		List<XPathIndexerProperties> xPathIndexerPropertiesList = xpathFilterConfiguration.getXPathIndexerPropertiesList();
 		for(XPathIndexerProperties xPathIndexerProperties : xPathIndexerPropertiesList) {
@@ -120,6 +121,9 @@ public class XPathIndexingFilter implements IndexingFilter {
 						
 					}
 				}
+			}
+			else{
+			    log.info("Document skiped, url do not match regex. ");
 			}
 		}
 		
